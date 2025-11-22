@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Viewer & Byte Inspector - Digital Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+
+        .upload-area.drag-over {
+            border-color: #28a745;
+            background-color: #e8f5e8;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .hex-dump {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .hex-offset {
+            color: #6c757d;
+            margin-right: 16px;
+        }
+
+        .hex-bytes {
+            color: #007bff;
+            letter-spacing: 1px;
+        }
+
+        .hex-ascii {
+            color: #28a745;
+            margin-left: 16px;
+            background-color: #fff;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .analysis-header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .progress-container {
+            display: none;
+        }
+
+        .string-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .entropy-chunks {
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .analysis-section {
+            display: none;
+        }
+
+        .analysis-section.active {
+            display: block;
+        }
+
+        .format-category {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-area {
+                padding: 20px;
+            }
+
+            .upload-icon {
+                font-size: 2rem;
+            }
+
+            .hex-dump {
+                font-size: 0.8rem;
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt"></i> Digital Forensics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-tools"></i> Tools
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="index.html">
+                                    <i class="bi bi-shield-check"></i> File Integrity
+                                </a></li>
+                            <li><a class="dropdown-item" href="logs-and-notes.html">
+                                    <i class="bi bi-clipboard-list"></i> Logs & Notes
+                                </a></li>
+                            <li><a class="dropdown-item" href="integrity-verification.html">
+                                    <i class="bi bi-shield-alt"></i> Integrity Check
+                                </a></li>
+                            <li><a class="dropdown-item" href="auto-integrity-dashboard.html">
+                                    <i class="bi bi-tachometer-alt"></i> Auto Integrity
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span id="navUserName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="viewProfile()">
+                                    <i class="bi bi-person"></i> Profile
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4" id="hex-viewer-container">
+        <!-- Header -->
+        <div class="analysis-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-code"></i> Hex Viewer & Byte-Level Inspector</h1>
+                    <p class="mb-0">Advanced binary file analysis for detecting low-level manipulations, file
+                        signatures, and data anomalies at the byte level.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <i class="fas fa-microscope fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Type Selection -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-cog"></i> Analysis Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="hex-analysis-type" class="form-label">Analysis Type</label>
+                        <select class="form-select" id="hex-analysis-type">
+                            <option value="analysis">Binary Analysis & Hex Dump</option>
+                            <option value="search">Pattern Search</option>
+                            <option value="compare">File Comparison</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Analysis Features</label>
+                        <div class="alert alert-info py-2 mb-0">
+                            <small><i class="fas fa-info-circle"></i> Comprehensive binary analysis with signature
+                                detection, entropy calculation, and anomaly identification.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-file-binary fa-2x text-primary mb-2"></i>
+                        <h6>Hex Dump</h6>
+                        <p class="small text-muted">Interactive hex display with ASCII representation and offset
+                            information</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-fingerprint fa-2x text-info mb-2"></i>
+                        <h6>Signature Detection</h6>
+                        <p class="small text-muted">Automatic detection of file signatures and magic numbers</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-search fa-2x text-warning mb-2"></i>
+                        <h6>Pattern Search</h6>
+                        <p class="small text-muted">Search for hex patterns or ASCII strings within binary data</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-balance-scale fa-2x text-success mb-2"></i>
+                        <h6>File Comparison</h6>
+                        <p class="small text-muted">Byte-level comparison between two files with difference highlighting
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Binary Analysis Section -->
+        <div id="hex-analysis-section" class="analysis-section active">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-upload"></i> Upload File for Binary Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="hex-viewer-upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            Drop file here or click to select for hex analysis
+                        </div>
+                        <div class="text-muted small">
+                            All file types supported - Max 50MB
+                        </div>
+                    </div>
+
+                    <input type="file" id="hex-viewer-file-input" style="display: none;">
+
+                    <!-- File info display -->
+                    <div id="hex-file-info" class="mt-3"></div>
+
+                    <!-- Analyze button -->
+                    <div class="text-center mt-3">
+                        <button id="hex-analyze-btn" class="btn btn-primary btn-lg" disabled>
+                            <i class="fas fa-microscope"></i> Start Binary Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pattern Search Section -->
+        <div id="hex-search-section" class="analysis-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-search"></i> Pattern Search</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="hex-search-pattern" class="form-label">Search Pattern</label>
+                            <input type="text" class="form-control" id="hex-search-pattern"
+                                placeholder="Enter hex pattern (e.g., FF D8 FF) or ASCII text">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="hex-search-type" class="form-label">Pattern Type</label>
+                            <select class="form-select" id="hex-search-type">
+                                <option value="hex">Hex Pattern</option>
+                                <option value="ascii">ASCII Text</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button id="hex-search-btn" class="btn btn-warning" disabled>
+                                    <i class="fas fa-search"></i> Search Pattern
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <strong>Search Examples:</strong><br>
+                            <strong>Hex:</strong> FF D8 FF (JPEG header), 89 50 4E 47 (PNG header)<br>
+                            <strong>ASCII:</strong> password, admin, config, secret
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Comparison Section -->
+        <div id="hex-compare-section" class="analysis-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-balance-scale"></i> Binary File Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <label class="form-label">First File</label>
+                            <div class="border p-3 text-center bg-light" style="cursor: pointer;"
+                                onclick="document.getElementById('hex-compare-file1-input').click()">
+                                <i class="fas fa-file fa-2x text-muted mb-2"></i>
+                                <div>Click to select first file</div>
+                            </div>
+                            <input type="file" id="hex-compare-file1-input" style="display: none;">
+                            <div id="hex-compare-file1-info" class="mt-2"></div>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-arrows-alt-h fa-2x text-muted"></i>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="form-label">Second File</label>
+                            <div class="border p-3 text-center bg-light" style="cursor: pointer;"
+                                onclick="document.getElementById('hex-compare-file2-input').click()">
+                                <i class="fas fa-file fa-2x text-muted mb-2"></i>
+                                <div>Click to select second file</div>
+                            </div>
+                            <input type="file" id="hex-compare-file2-input" style="display: none;">
+                            <div id="hex-compare-file2-info" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button id="hex-compare-btn" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-balance-scale"></i> Compare Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div id="hex-progress-container" class="progress-container mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border text-primary me-3" role="status"></div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span id="hex-progress-text">Processing...</span>
+                                <span class="text-muted">Please wait</span>
+                            </div>
+                            <div class="progress">
+                                <div id="hex-progress-bar" class="progress-bar" role="progressbar" style="width: 0%"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="hex-results-container" class="mb-4" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Analysis Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="hex-results-content">
+                        <!-- Results will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help & Information -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-question-circle"></i> About Hex Viewer & Byte-Level Inspector</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-eye text-primary"></i> What it detects:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-muted"></i> File signature mismatches</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Hidden or embedded files</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Data tampering at byte level</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Encryption/compression patterns</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> String artifacts and metadata</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> File structure anomalies</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tools text-warning"></i> Analysis Features:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-muted"></i> Interactive hex dump with ASCII</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Entropy analysis for randomness</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Byte frequency statistics</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> String extraction (ASCII/Unicode)</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Hash calculation (MD5/SHA1/SHA256)</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Binary file comparison</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Supported Formats -->
+                <div class="mt-4">
+                    <h6><i class="fas fa-file-alt text-info"></i> Supported File Types:</h6>
+                    <div id="hex-supported-formats" class="mt-2">
+                        <div class="text-muted">Loading supported formats...</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> This tool provides low-level binary analysis capabilities essential for
+                    digital forensics.
+                    It can analyze any file type and detect various forms of data manipulation, steganography, and file
+                    structure anomalies.
+                    Results should be interpreted by qualified forensic analysts.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/hex-viewer.js"></script>
+</body>
+
+</html>

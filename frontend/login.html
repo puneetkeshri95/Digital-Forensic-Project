@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Digital Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/premium.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            min-height: auto;
+            overflow: visible;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0;
+            overflow: visible;
+        }
+
+        .login-header h3 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.75rem;
+            line-height: 1.2;
+            word-wrap: break-word;
+            overflow: visible;
+        }
+
+        .login-header p {
+            color: #666;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .form-floating {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-login {
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            font-weight: 500;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn-login:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+        }
+
+        .alert {
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .remember-me {
+            margin: 20px 0;
+        }
+
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .system-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        .role-admin {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .role-investigator {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .role-viewer {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .footer-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label {
+            opacity: 0.65;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        .form-floating>label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+            padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: #007bff;
+        }
+
+        .footer-links a:hover {
+            color: #2a5298;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-header h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Additional text visibility improvements */
+        .system-info {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-shadow: none;
+        }
+
+        .alert-info {
+            backdrop-filter: blur(10px);
+        }
+
+        /* Ensure all text is readable */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="mb-2">
+                    <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                </div>
+                <h3>Digital Forensics</h3>
+                <p class="mb-3">Secure Evidence Analysis Platform</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div id="alertContainer"></div>
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                        required>
+                    <label for="username">
+                        <i class="fas fa-user me-2"></i>Username
+                    </label>
+                </div>
+
+                <div class="form-floating password-container">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+                        required>
+                    <label for="password">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                    </button>
+                </div>
+
+                <div class="remember-me mb-3">
+                    <div class="form-check d-flex align-items-center">
+                        <input class="form-check-input me-2" type="checkbox" id="rememberMe" name="remember_me">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me for 7 days
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login w-100" id="loginBtn">
+                    <span class="login-text">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </span>
+                    <span class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Signing In...
+                    </span>
+                </button>
+            </form>
+
+            <!-- System Information -->
+            <div class="system-info">
+                <div class="text-center mb-2">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>Access Levels:
+                    </small>
+                </div>
+                <div class="text-center mb-2">
+                    <span class="role-badge role-admin me-1">
+                        <i class="fas fa-crown me-1"></i>Admin
+                    </span>
+                    <span class="role-badge role-investigator me-1">
+                        <i class="fas fa-search me-1"></i>Investigator
+                    </span>
+                    <span class="role-badge role-viewer">
+                        <i class="fas fa-eye me-1"></i>Viewer
+                    </span>
+                </div>
+                <small class="d-block text-center text-muted">
+                    <i class="fas fa-shield-check me-1"></i>
+                    Secure authentication with role-based access control
+                </small>
+            </div>
+
+            <!-- Demo Credentials -->
+            <div class="alert alert-info mt-3" id="demoCredentials">
+                <h6 class="alert-heading mb-2 text-center">
+                    <i class="fas fa-key me-2"></i>Demo Credentials
+                </h6>
+                <div class="text-center">
+                    <div class="mb-2">
+                        <strong>Demo User:</strong> <code>hellohacker / HACKME184</code><br>
+                        <small class="text-muted">Forensic investigator access with analysis tools</small>
+                    </div>
+                    <div>
+                        <strong>Admin:</strong> <code>admin / ForensicsAdmin2024!</code><br>
+                        <small class="text-muted">Full system access including user management</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="footer-links mt-3">
+                <a href="#" onclick="showSystemInfo()">
+                    <i class="fas fa-info me-1"></i>System Info
+                </a>
+                <a href="#" onclick="showSecurityInfo()">
+                    <i class="fas fa-shield-alt me-1"></i>Security
+                </a>
+                <a href="#" onclick="showHelp()">
+                    <i class="fas fa-question-circle me-1"></i>Help
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info Modal -->
+    <div class="modal fade" id="systemInfoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>System Information
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Authentication Features</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>JWT Token Authentication</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Role-Based Access Control</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Session Management</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Account Lockout Protection</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Activity Logging</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Security Features</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Password Hashing (PBKDF2)</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Secure HTTP-Only Cookies</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Failed Login Tracking</li>
+                                <li><i class="fas fa-check text-success me-2"></i>IP Address Logging</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Token Expiration</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6>User Roles & Permissions</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <i class="fas fa-crown me-2"></i>Administrator
+                                </div>
+                                <div class="card-body">
+                                    <small>
+                                        • Full system access<br>
+                                        • User management<br>
+                                        • System configuration<br>
+                                        • All forensic operations<br>
+                                        • Audit log access
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-search me-2"></i>Investigator
+                                </div>
+                                <div class="card-body">
+                                    <small>
+                                        • Create/edit cases<br>
+                                        • Upload evidence<br>
+                                        • Perform analysis<br>
+                                        • Export results<br>
+                                        • Integrity verification
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <i class="fas fa-eye me-2"></i>Viewer
+                                </div>
+                                <div class="card-body">
+                                    <small>
+                                        • View cases<br>
+                                        • View evidence<br>
+                                        • View analysis results<br>
+                                        • Read-only access<br>
+                                        • No modification rights
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('passwordToggleIcon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            // Any initialization code can go here
+        });
+    </script>
+</body>
+
+</html>

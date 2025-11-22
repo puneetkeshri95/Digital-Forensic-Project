@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clone/Noise Detection - Digital Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+
+        .upload-area.drag-over {
+            border-color: #28a745;
+            background-color: #e8f5e8;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .detection-method-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .detection-method-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .method-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .risk-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .risk-low {
+            background-color: #28a745;
+        }
+
+        .risk-medium {
+            background-color: #ffc107;
+        }
+
+        .risk-high {
+            background-color: #dc3545;
+        }
+
+        .analysis-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .progress-container {
+            display: none;
+        }
+
+        .visualization-container img {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .upload-area {
+                padding: 20px;
+            }
+
+            .upload-icon {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt"></i> Digital Forensics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-tools"></i> Tools
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="index.html">
+                                    <i class="bi bi-shield-check"></i> File Integrity
+                                </a></li>
+                            <li><a class="dropdown-item" href="logs-and-notes.html">
+                                    <i class="bi bi-clipboard-list"></i> Logs & Notes
+                                </a></li>
+                            <li><a class="dropdown-item" href="integrity-verification.html">
+                                    <i class="bi bi-shield-alt"></i> Integrity Check
+                                </a></li>
+                            <li><a class="dropdown-item" href="auto-integrity-dashboard.html">
+                                    <i class="bi bi-tachometer-alt"></i> Auto Integrity
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span id="navUserName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="viewProfile()">
+                                    <i class="bi bi-person"></i> Profile
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4" id="clone-noise-container">
+        <!-- Header -->
+        <div class="analysis-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-copy"></i> Clone & Noise Detection</h1>
+                    <p class="mb-0">Advanced image tampering detection using multiple algorithms including copy-move
+                        detection, block matching, noise analysis, and statistical anomaly detection.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <i class="fas fa-search-plus fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-cog"></i> Analysis Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="clone-noise-analysis-type" class="form-label">Analysis Type</label>
+                        <select class="form-select" id="clone-noise-analysis-type">
+                            <option value="comprehensive">Comprehensive Analysis (All Methods)</option>
+                            <option value="copy-move">Copy-Move Detection Only</option>
+                            <option value="noise">Noise Consistency Analysis</option>
+                            <option value="block-matching">Block Matching Analysis</option>
+                            <option value="statistical">Statistical Anomaly Detection</option>
+                            <option value="batch">Batch Analysis (Multiple Files)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Quick Info</label>
+                        <div class="alert alert-info py-2 mb-0">
+                            <small><i class="fas fa-info-circle"></i> Comprehensive analysis provides the most thorough
+                                tampering detection using all available methods.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detection Methods Selection (for comprehensive analysis) -->
+                <div id="clone-noise-methods-container" class="mt-4">
+                    <h6>Detection Methods <small class="text-muted">(for comprehensive analysis)</small></h6>
+                    <div class="row" id="clone-noise-methods">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="detection-method"
+                                    value="copy_move" id="method-copy-move" checked>
+                                <label class="form-check-label" for="method-copy-move">
+                                    <i class="fas fa-copy text-primary"></i> Copy-Move Detection
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="detection-method"
+                                    value="block_matching" id="method-block-matching" checked>
+                                <label class="form-check-label" for="method-block-matching">
+                                    <i class="fas fa-th text-info"></i> Block Matching
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="detection-method"
+                                    value="noise_analysis" id="method-noise-analysis" checked>
+                                <label class="form-check-label" for="method-noise-analysis">
+                                    <i class="fas fa-wave-square text-warning"></i> Noise Analysis
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="detection-method"
+                                    value="statistical_analysis" id="method-statistical" checked>
+                                <label class="form-check-label" for="method-statistical">
+                                    <i class="fas fa-chart-line text-success"></i> Statistical Analysis
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method Information Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card detection-method-card h-100">
+                    <div class="card-body text-center">
+                        <div class="method-icon text-primary">
+                            <i class="fas fa-copy"></i>
+                        </div>
+                        <h6>Copy-Move Detection</h6>
+                        <p class="small text-muted">Detects identical or similar regions that have been copied and
+                            pasted within the same image using SIFT/ORB feature matching.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card detection-method-card h-100">
+                    <div class="card-body text-center">
+                        <div class="method-icon text-info">
+                            <i class="fas fa-th"></i>
+                        </div>
+                        <h6>Block Matching</h6>
+                        <p class="small text-muted">Analyzes image blocks for similarities using normalized
+                            cross-correlation to identify cloned regions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card detection-method-card h-100">
+                    <div class="card-body text-center">
+                        <div class="method-icon text-warning">
+                            <i class="fas fa-wave-square"></i>
+                        </div>
+                        <h6>Noise Analysis</h6>
+                        <p class="small text-muted">Examines noise patterns and consistency across different regions to
+                            detect tampering artifacts.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card detection-method-card h-100">
+                    <div class="card-body text-center">
+                        <div class="method-icon text-success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6>Statistical Analysis</h6>
+                        <p class="small text-muted">Analyzes statistical properties (mean, std, skewness, kurtosis,
+                            entropy) for anomaly detection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-upload"></i> File Upload</h5>
+            </div>
+            <div class="card-body">
+                <div class="upload-area" id="clone-noise-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        Drop image here or click to select file for comprehensive tampering analysis
+                    </div>
+                    <div class="text-muted small">
+                        Supported formats: JPEG, PNG, BMP, TIFF, GIF (Max 10MB)
+                    </div>
+                </div>
+
+                <!-- Hidden file inputs -->
+                <input type="file" id="clone-noise-file-input" accept=".jpg,.jpeg,.png,.bmp,.tiff,.gif"
+                    style="display: none;">
+                <input type="file" id="clone-noise-batch-file-input" accept=".jpg,.jpeg,.png,.bmp,.tiff,.gif" multiple
+                    style="display: none;">
+
+                <!-- File info display -->
+                <div id="clone-noise-file-info" class="mt-3"></div>
+
+                <!-- Analyze button -->
+                <div class="text-center mt-3">
+                    <button id="clone-noise-analyze-btn" class="btn btn-primary btn-lg" disabled>
+                        <i class="fas fa-search"></i> Start Tampering Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div id="clone-noise-progress-container" class="progress-container mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border text-primary me-3" role="status"></div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span id="clone-noise-progress-text">Initializing analysis...</span>
+                                <span class="text-muted"><span id="clone-noise-progress-percentage">0</span>%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="clone-noise-progress-bar" class="progress-bar" role="progressbar"
+                                    style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="clone-noise-results-container" class="mb-4" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Tampering Detection Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="clone-noise-results-content">
+                        <!-- Results will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-question-circle"></i> About Clone & Noise Detection</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle text-primary"></i> What it detects:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-muted"></i> Copy-move forgeries</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Cloned image regions</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Noise inconsistencies</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Statistical anomalies</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Block-level similarities</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning"></i> How to use:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-muted"></i> Select analysis type (comprehensive
+                                recommended)</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Upload image(s) for analysis</li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Review detailed results and visualizations
+                            </li>
+                            <li><i class="fas fa-arrow-right text-muted"></i> Export findings for documentation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> This tool uses advanced computer vision algorithms including SIFT/ORB feature
+                    detection,
+                    DBSCAN clustering, normalized cross-correlation, and statistical analysis to detect various forms of
+                    image tampering.
+                    Results should be interpreted by qualified forensic analysts.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/clone-noise-detector.js"></script>
+</body>
+
+</html>

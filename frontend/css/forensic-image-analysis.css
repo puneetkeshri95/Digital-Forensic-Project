@@ -1,0 +1,389 @@
+/* Forensic Image Analysis - Custom Styles */
+
+/* Upload Area Styling */
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #f8f9fa;
+}
+
+.upload-area:hover {
+    border-color: #0d6efd;
+    background: #e7f3ff;
+}
+
+.upload-area.drag-over {
+    border-color: #0d6efd;
+    background: #e7f3ff;
+    transform: scale(1.02);
+}
+
+/* Forensic Score Circle */
+.forensic-score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Forensic Indicators */
+.forensic-indicator {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 0 auto;
+    display: inline-block;
+}
+
+.forensic-indicator.low-risk {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.forensic-indicator.medium-risk {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.forensic-indicator.high-risk {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Forensic Metric Values */
+.forensic-metric-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+/* Tab Styling */
+.nav-tabs .nav-link {
+    border: none;
+    padding: 12px 20px;
+    margin-right: 5px;
+    border-radius: 8px 8px 0 0;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+}
+
+/* Progress Bar Custom Styling */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Analysis Results Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Image Analysis Visualization */
+.forensic-visualization-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.forensic-visualization-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 4px;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Alert Positioning */
+.alert.position-fixed {
+    z-index: 9999;
+}
+
+/* Accordion Custom Styling */
+.accordion-button {
+    font-size: 0.9rem;
+    padding: 10px 15px;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f3ff;
+    color: #0d6efd;
+}
+
+.accordion-body {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Table Styling in Cards */
+.table-sm td {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+.table-sm td:first-child {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Badge Styling */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.6em;
+}
+
+/* List Group Custom Styling */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Image Preview Styling */
+#forensic-image-preview img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+}
+
+/* Analysis Summary Dashboard */
+#analysis-summary-dashboard .card {
+    border: 2px solid #0d6efd;
+}
+
+#analysis-summary-dashboard .card-header {
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+}
+
+/* Forensic Hash Display */
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-tabs .nav-link {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        margin-right: 2px;
+    }
+    
+    .forensic-score-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 1rem;
+    }
+    
+    .forensic-metric-value {
+        font-size: 1.4rem;
+    }
+    
+    .upload-area {
+        padding: 30px 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .nav-tabs .nav-link {
+        margin-bottom: 5px;
+        border-radius: 20px;
+    }
+    
+    .nav-tabs .nav-link.active {
+        border: 1px solid #0d6efd;
+        border-radius: 20px;
+        margin-bottom: 5px;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Interactive Elements */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Custom Scrollbar */
+.tab-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Analysis Type Checkboxes */
+.form-check {
+    padding: 8px 0;
+}
+
+.form-check-label {
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Success/Error States */
+.is-valid {
+    border-color: #28a745;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Tooltip Styling */
+.tooltip-inner {
+    background-color: #343a40;
+    color: #fff;
+    font-size: 0.8rem;
+    max-width: 200px;
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+/* Analysis Status Indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.status-indicator.success {
+    background-color: #28a745;
+}
+
+.status-indicator.warning {
+    background-color: #ffc107;
+}
+
+.status-indicator.danger {
+    background-color: #dc3545;
+}
+
+.status-indicator.info {
+    background-color: #17a2b8;
+}

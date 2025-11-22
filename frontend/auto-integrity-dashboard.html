@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Integrity Dashboard - Digital Forensics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .integrity-status-card {
+      border-left: 4px solid;
+      transition: all 0.3s ease;
+    }
+
+    .integrity-verified {
+      border-left-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    .integrity-compromised {
+      border-left-color: #dc3545;
+      background-color: #fff8f8;
+    }
+
+    .integrity-pending {
+      border-left-color: #ffc107;
+      background-color: #fffdf7;
+    }
+
+    .hash-display {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      background-color: #f8f9fa;
+      padding: 8px;
+      border-radius: 4px;
+      word-break: break-all;
+      margin: 5px 0;
+    }
+
+    .hash-changed {
+      background-color: #ffeaea;
+      border: 1px solid #dc3545;
+    }
+
+    .hash-verified {
+      background-color: #eafaf1;
+      border: 1px solid #28a745;
+    }
+
+    .operation-timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .operation-timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #dee2e6;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #6c757d;
+    }
+
+    .timeline-item.success::before {
+      background: #28a745;
+    }
+
+    .timeline-item.danger::before {
+      background: #dc3545;
+    }
+
+    .timeline-item.warning::before {
+      background: #ffc107;
+    }
+
+    .live-status {
+      animation: pulse 2s infinite;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.3"/></pattern></defs><rect width="80" height="80" fill="url(%23dots)"/></svg>');
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .analysis-badge {
+      font-size: 0.75em;
+      padding: 4px 8px;
+    }
+
+    .file-integrity-widget {
+      border: 2px dashed #dee2e6;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .file-integrity-widget:hover {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+
+    .file-integrity-widget.drag-over {
+      border-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    .quick-hash-result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-shield-alt me-2"></i>
+        Digital Forensics - Auto Integrity Dashboard
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">
+              <i class="bi bi-house"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-tools"></i> Tools
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="index.html">
+                  <i class="bi bi-shield-check"></i> File Integrity
+                </a></li>
+              <li><a class="dropdown-item" href="logs-and-notes.html">
+                  <i class="bi bi-clipboard-list"></i> Logs & Notes
+                </a></li>
+              <li><a class="dropdown-item" href="integrity-verification.html">
+                  <i class="bi bi-shield-alt"></i> Integrity Check
+                </a></li>
+              <li><a class="dropdown-item active" href="auto-integrity-dashboard.html">
+                  <i class="bi bi-tachometer-alt"></i> Auto Integrity
+                </a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> <span id="navUserName">User</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" onclick="viewProfile()">
+                  <i class="bi bi-person"></i> Profile
+                </a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="#" onclick="logout()">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- Real-time Status Dashboard -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Real-time Integrity Status
+            </h5>
+            <button class="btn btn-sm btn-outline-primary" onclick="refreshDashboard()">
+              <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="row" id="statusCards">
+              <!-- Status cards will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick File Integrity Check -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-bolt me-2"></i>
+              Quick Integrity Check
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="file-integrity-widget" id="quickIntegrityWidget" ondrop="handleFileDrop(event)"
+              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+              <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
+              <p class="mb-2">Drop a file here or click to select</p>
+              <input type="file" id="quickFileInput" style="display: none;" onchange="handleFileSelect(event)">
+              <button class="btn btn-outline-primary btn-sm"
+                onclick="document.getElementById('quickFileInput').click()">
+                <i class="fas fa-folder-open me-1"></i>Select File
+              </button>
+            </div>
+            <div id="quickHashResult" class="quick-hash-result" style="display: none;">
+              <!-- Quick hash results will appear here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-tasks me-2"></i>
+              Active Operations
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="activeOperations">
+              <div class="text-center text-muted">
+                <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                <p>No active operations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis History with Integrity Status -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-history me-2"></i>
+              Analysis History with Integrity Verification
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="operation-timeline" id="operationTimeline">
+              <!-- Timeline items will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrity Status Modal -->
+  <div class="modal fade" id="integrityModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-info-circle me-2"></i>
+            Integrity Verification Details
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="integrityModalBody">
+          <!-- Detailed integrity information will be populated here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/auto-integrity-dashboard.js"></script>
+</body>
+
+</html>

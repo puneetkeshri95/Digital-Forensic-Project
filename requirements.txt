@@ -1,0 +1,39 @@
+# Digital Forensics Application Dependencies
+
+# Flask framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Database
+sqlite3
+
+# File processing and analysis
+python-magic==0.4.27
+python-magic-bin==0.4.14  # For Windows
+
+# Security and hashing
+hashlib  # Built-in
+cryptography==41.0.7
+
+# Date and time
+python-dateutil==2.8.2
+
+# Logging and utilities
+colorlog==6.7.0
+
+# Development dependencies
+pytest==7.4.3
+pytest-flask==1.3.0
+black==23.9.1
+flake8==6.1.0
+
+# Optional: Advanced forensics libraries
+# yara-python==4.3.1
+# pefile==2023.2.7
+# pyexifread==3.0.0
+
+# Web server (production)
+gunicorn==21.2.0
+
+# Environment management
+python-dotenv==1.0.0

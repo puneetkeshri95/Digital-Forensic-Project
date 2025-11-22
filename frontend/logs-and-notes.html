@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigation Logs & Notes - Digital Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.3"/></pattern></defs><rect width="80" height="80" fill="url(%23dots)"/></svg>');
+            z-index: 0;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-container {
+            margin-top: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #2980b9 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .activity-log-item {
+            border-left: 4px solid var(--secondary-color);
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .activity-log-item:hover {
+            transform: translateX(5px);
+        }
+
+        .activity-log-item.success {
+            border-left-color: var(--success-color);
+        }
+
+        .activity-log-item.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .activity-log-item.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .note-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--secondary-color);
+            transition: all 0.3s;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .note-card.priority-high {
+            border-left-color: var(--danger-color);
+        }
+
+        .note-card.priority-medium {
+            border-left-color: var(--warning-color);
+        }
+
+        .note-card.priority-low {
+            border-left-color: var(--success-color);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .note-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .note-meta {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .note-content {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .note-tags {
+            margin-top: 10px;
+        }
+
+        .note-tag {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .priority-medium {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .priority-low {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 25px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-custom {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .scrollable-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .scrollable-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollable-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scrollable-container::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .activity-type-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .type-analysis {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-upload {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .type-system {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .type-user {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin-top: 10px;
+            }
+
+            .note-card {
+                padding: 15px;
+            }
+
+            .stats-number {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt me-2"></i>
+                Digital Forensics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-tools"></i> Tools
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="index.html">
+                                    <i class="bi bi-shield-check"></i> File Integrity
+                                </a></li>
+                            <li><a class="dropdown-item active" href="logs-and-notes.html">
+                                    <i class="bi bi-clipboard-list"></i> Logs & Notes
+                                </a></li>
+                            <li><a class="dropdown-item" href="integrity-verification.html">
+                                    <i class="bi bi-shield-alt"></i> Integrity Check
+                                </a></li>
+                            <li><a class="dropdown-item" href="auto-integrity-dashboard.html">
+                                    <i class="bi bi-tachometer-alt"></i> Auto Integrity
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span id="navUserName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="viewProfile()">
+                                    <i class="bi bi-person"></i> Profile
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container main-container">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-clipboard-list me-2"></i>Investigation Logs & Notes</h2>
+                        <p class="text-muted">Track activities, manage notes, and maintain investigation records</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-custom me-2" data-action="add-note">
+                            <i class="fas fa-plus me-1"></i>Add Note
+                        </button>
+                        <button class="btn btn-outline-primary btn-custom" data-action="export-data">
+                            <i class="fas fa-download me-1"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stats-card">
+                    <div class="stats-number" id="totalActivities">0</div>
+                    <div class="stats-label">Total Activities</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="stats-number" id="totalNotes">0</div>
+                    <div class="stats-label">Investigation Notes</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stats-number" id="analysisCount">0</div>
+                    <div class="stats-label">Analyses Performed</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="stats-number" id="evidenceCount">0</div>
+                    <div class="stats-label">Evidence Items</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Search Logs & Notes</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="globalSearch" placeholder="Search...">
+                        <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Activity Type</label>
+                    <select class="form-select" id="activityTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="ela_analysis">ELA Analysis</option>
+                        <option value="exif_analysis">EXIF Analysis</option>
+                        <option value="hex_analysis">Hex Analysis</option>
+                        <option value="clone_detection">Clone Detection</option>
+                        <option value="noise_analysis">Noise Analysis</option>
+                        <option value="file_upload">File Upload</option>
+                        <option value="user_action">User Action</option>
+                        <option value="system_event">System Event</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Note Priority</label>
+                    <select class="form-select" id="notePriorityFilter">
+                        <option value="">All Priorities</option>
+                        <option value="high">High Priority</option>
+                        <option value="normal">Normal Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Actions</label>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm w-100" onclick="refreshData()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Activity Logs Panel -->
+            <div class="col-lg-7 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list me-2"></i>Activity Logs
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-light" onclick="loadMoreLogs()">
+                                <i class="fas fa-plus me-1"></i>Load More
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="activityLogsContainer" class="scrollable-container p-3">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading activities...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investigator Notes Panel -->
+            <div class="col-lg-5 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-sticky-note me-2"></i>Investigation Notes
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-light" data-action="add-note">
+                                <i class="fas fa-plus me-1"></i>Add Note
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="notesContainer" class="scrollable-container p-3">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading notes...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Evidence Items -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-evidence me-2"></i>Recent Evidence Items
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-light" onclick="loadEvidence()">
+                                <i class="fas fa-refresh me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="evidenceContainer">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading evidence items...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Forensics Logger -->
+    <script src="js/forensics-logger.js"></script>
+
+    <script>
+        // Page-specific functionality
+        class LogsAndNotesPage {
+            constructor() {
+                this.currentOffset = 0;
+                this.notesOffset = 0;
+                this.isLoading = false;
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadInitialData();
+                this.startPeriodicRefresh();
+            }
+
+            setupEventListeners() {
+                // Search functionality
+                document.getElementById('searchButton').addEventListener('click', () => {
+                    this.performSearch();
+                });
+
+                document.getElementById('globalSearch').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch();
+                    }
+                });
+
+                // Filter changes
+                document.getElementById('activityTypeFilter').addEventListener('change', () => {
+                    this.loadActivityLogs(true);
+                });
+
+                document.getElementById('notePriorityFilter').addEventListener('change', () => {
+                    this.loadNotes(true);
+                });
+            }
+
+            async loadInitialData() {
+                await Promise.all([
+                    this.loadActivityLogs(true),
+                    this.loadNotes(true),
+                    this.loadEvidence(),
+                    this.loadStatistics()
+                ]);
+            }
+
+            async loadActivityLogs(reset = false) {
+                if (this.isLoading) return;
+
+                try {
+                    this.isLoading = true;
+
+                    if (reset) {
+                        this.currentOffset = 0;
+                        document.getElementById('activityLogsContainer').innerHTML = `
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading activities...</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const params = new URLSearchParams({
+                        limit: '20',
+                        offset: this.currentOffset.toString()
+                    });
+
+                    const sessionId = localStorage.getItem('forensics_session');
+                    if (sessionId) {
+                        const session = JSON.parse(sessionId);
+                        params.append('session_id', session.session_id);
+                    }
+
+                    const activityType = document.getElementById('activityTypeFilter').value;
+                    if (activityType) {
+                        params.append('activity_type', activityType);
+                    }
+
+                    const response = await fetch(`/api/logging/activities?${params}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.displayActivityLogs(result.activities, reset);
+                        if (!reset) {
+                            this.currentOffset += result.activities.length;
+                        }
+                    } else {
+                        this.showError('Failed to load activity logs');
+                    }
+                } catch (error) {
+                    console.error('Error loading activity logs:', error);
+                    this.showError('Failed to load activity logs');
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            displayActivityLogs(activities, reset = false) {
+                const container = document.getElementById('activityLogsContainer');
+
+                if (reset) {
+                    container.innerHTML = '';
+                }
+
+                if (activities.length === 0 && reset) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h5>No Activity Logs</h5>
+                            <p>No activities have been logged yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                activities.forEach(activity => {
+                    const logItem = this.createActivityLogItem(activity);
+                    container.appendChild(logItem);
+                });
+            }
+
+            createActivityLogItem(activity) {
+                const item = document.createElement('div');
+                item.className = `activity-log-item ${activity.result_status || 'success'}`;
+
+                const typeClass = this.getActivityTypeClass(activity.activity_type);
+                const statusBadge = activity.result_status ?
+                    `<span class="badge bg-${activity.result_status === 'success' ? 'success' : 'danger'}">${activity.result_status}</span>` : '';
+
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="activity-type-badge ${typeClass} me-2">${activity.activity_type}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="fw-bold mb-1">${activity.description}</div>
+                            ${activity.file_name ? `<div class="text-muted small mb-1">
+                                <i class="fas fa-file me-1"></i>File: ${activity.file_name}
+                            </div>` : ''}
+                            ${activity.error_message ? `<div class="text-danger small mb-1">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Error: ${activity.error_message}
+                            </div>` : ''}
+                            <div class="row text-muted small">
+                                <div class="col-sm-6">
+                                    <i class="fas fa-clock me-1"></i>${new Date(activity.timestamp).toLocaleString()}
+                                </div>
+                                ${activity.duration_ms ? `<div class="col-sm-6">
+                                    <i class="fas fa-stopwatch me-1"></i>Duration: ${activity.duration_ms}ms
+                                </div>` : ''}
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="showActivityDetails(${activity.id})">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                return item;
+            }
+
+            getActivityTypeClass(activityType) {
+                if (activityType.includes('analysis')) return 'type-analysis';
+                if (activityType.includes('upload') || activityType.includes('download')) return 'type-upload';
+                if (activityType.includes('system') || activityType.includes('error')) return 'type-system';
+                return 'type-user';
+            }
+
+            async loadNotes(reset = false) {
+                try {
+                    if (reset) {
+                        this.notesOffset = 0;
+                        document.getElementById('notesContainer').innerHTML = `
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading notes...</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const params = new URLSearchParams({
+                        limit: '10',
+                        offset: this.notesOffset.toString()
+                    });
+
+                    const sessionId = localStorage.getItem('forensics_session');
+                    if (sessionId) {
+                        const session = JSON.parse(sessionId);
+                        params.append('session_id', session.session_id);
+                    }
+
+                    const response = await fetch(`/api/logging/notes?${params}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.displayNotes(result.notes, reset);
+                        if (!reset) {
+                            this.notesOffset += result.notes.length;
+                        }
+                    } else {
+                        this.showError('Failed to load notes');
+                    }
+                } catch (error) {
+                    console.error('Error loading notes:', error);
+                    this.showError('Failed to load notes');
+                }
+            }
+
+            displayNotes(notes, reset = false) {
+                const container = document.getElementById('notesContainer');
+
+                if (reset) {
+                    container.innerHTML = '';
+                }
+
+                if (notes.length === 0 && reset) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-sticky-note"></i>
+                            <h5>No Notes</h5>
+                            <p>No investigation notes have been added yet.</p>
+                            <button class="btn btn-primary" data-action="add-note">
+                                <i class="fas fa-plus me-1"></i>Add First Note
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                notes.forEach(note => {
+                    const noteCard = this.createNoteCard(note);
+                    container.appendChild(noteCard);
+                });
+            }
+
+            createNoteCard(note) {
+                const card = document.createElement('div');
+                card.className = `note-card priority-${note.priority || 'normal'}`;
+
+                const tags = note.tags ? note.tags.map(tag =>
+                    `<span class="note-tag">${tag}</span>`
+                ).join('') : '';
+
+                card.innerHTML = `
+                    <div class="note-header">
+                        <h6 class="note-title">${note.title}</h6>
+                        <span class="priority-badge priority-${note.priority || 'normal'}">
+                            ${(note.priority || 'normal').toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="note-meta">
+                        <i class="fas fa-user me-1"></i>${note.investigator_name || note.investigator_id}
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-clock me-1"></i>${new Date(note.timestamp).toLocaleString()}
+                        ${note.note_type ? `<span class="mx-2">•</span><i class="fas fa-tag me-1"></i>${note.note_type}` : ''}
+                    </div>
+                    <div class="note-content">${note.content}</div>
+                    ${note.evidence_reference ? `<div class="text-muted small mb-2">
+                        <i class="fas fa-link me-1"></i>Evidence: ${note.evidence_reference}
+                    </div>` : ''}
+                    ${tags ? `<div class="note-tags">${tags}</div>` : ''}
+                    <div class="note-actions mt-3 text-end">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editNote(${note.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            async loadEvidence() {
+                try {
+                    const params = new URLSearchParams({ limit: '5' });
+
+                    const sessionId = localStorage.getItem('forensics_session');
+                    if (sessionId) {
+                        const session = JSON.parse(sessionId);
+                        params.append('session_id', session.session_id);
+                    }
+
+                    const response = await fetch(`/api/logging/evidence?${params}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.displayEvidence(result.evidence);
+                    } else {
+                        this.showError('Failed to load evidence items');
+                    }
+                } catch (error) {
+                    console.error('Error loading evidence:', error);
+                    this.showError('Failed to load evidence items');
+                }
+            }
+
+            displayEvidence(evidence) {
+                const container = document.getElementById('evidenceContainer');
+
+                if (evidence.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <h5>No Evidence Items</h5>
+                            <p>No evidence items have been recorded yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const table = document.createElement('div');
+                table.className = 'table-responsive';
+                table.innerHTML = `
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Evidence ID</th>
+                                <th>Type</th>
+                                <th>File Name</th>
+                                <th>Status</th>
+                                <th>Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${evidence.map(item => `
+                                <tr>
+                                    <td><code>${item.evidence_id}</code></td>
+                                    <td><span class="badge bg-secondary">${item.item_type}</span></td>
+                                    <td>${item.file_name || '-'}</td>
+                                    <td><span class="badge bg-${item.analysis_status === 'completed' ? 'success' : 'warning'}">${item.analysis_status}</span></td>
+                                    <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewEvidence('${item.evidence_id}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                container.innerHTML = '';
+                container.appendChild(table);
+            }
+
+            async loadStatistics() {
+                try {
+                    const sessionId = localStorage.getItem('forensics_session');
+                    if (sessionId) {
+                        const session = JSON.parse(sessionId);
+                        const response = await fetch(`/api/logging/sessions/${session.session_id}/summary`);
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const summary = result.summary;
+                            document.getElementById('totalActivities').textContent = summary.total_activities || 0;
+                            document.getElementById('totalNotes').textContent = summary.total_notes || 0;
+                            document.getElementById('analysisCount').textContent =
+                                (summary.activity_counts?.ela_analysis || 0) +
+                                (summary.activity_counts?.exif_analysis || 0) +
+                                (summary.activity_counts?.hex_analysis || 0);
+                            document.getElementById('evidenceCount').textContent = summary.evidence_count || 0;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading statistics:', error);
+                }
+            }
+
+            async performSearch() {
+                const searchTerm = document.getElementById('globalSearch').value.trim();
+                if (!searchTerm) {
+                    this.loadInitialData();
+                    return;
+                }
+
+                try {
+                    const params = new URLSearchParams({ q: searchTerm });
+
+                    // Search both logs and notes
+                    const [logsResponse, notesResponse] = await Promise.all([
+                        fetch(`/api/logging/activities/search?${params}`),
+                        fetch(`/api/logging/notes/search?${params}`)
+                    ]);
+
+                    const logsResult = await logsResponse.json();
+                    const notesResult = await notesResponse.json();
+
+                    if (logsResult.success) {
+                        this.displayActivityLogs(logsResult.results, true);
+                    }
+
+                    if (notesResult.success) {
+                        this.displayNotes(notesResult.results, true);
+                    }
+                } catch (error) {
+                    console.error('Error performing search:', error);
+                    this.showError('Search failed');
+                }
+            }
+
+            startPeriodicRefresh() {
+                // Refresh data every 30 seconds
+                setInterval(() => {
+                    this.loadStatistics();
+                }, 30000);
+            }
+
+            showError(message) {
+                // Use forensics logger's toast functionality
+                if (window.forensicsLogger) {
+                    window.forensicsLogger.showError(message);
+                } else {
+                    alert(message);
+                }
+            }
+
+            showSuccess(message) {
+                if (window.forensicsLogger) {
+                    window.forensicsLogger.showSuccess(message);
+                } else {
+                    alert(message);
+                }
+            }
+        }
+
+        // Global functions for button handlers
+        function loadMoreLogs() {
+            if (window.logsPage) {
+                window.logsPage.loadActivityLogs(false);
+            }
+        }
+
+        function refreshData() {
+            if (window.logsPage) {
+                window.logsPage.loadInitialData();
+            }
+        }
+
+        function editNote(noteId) {
+            // This would typically fetch the note data and show the edit modal
+            console.log('Edit note:', noteId);
+        }
+
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                // Delete note via API
+                console.log('Delete note:', noteId);
+            }
+        }
+
+        function showActivityDetails(activityId) {
+            // Show detailed activity information
+            console.log('Show activity details:', activityId);
+        }
+
+        function viewEvidence(evidenceId) {
+            // View evidence details
+            console.log('View evidence:', evidenceId);
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.logsPage = new LogsAndNotesPage();
+        });
+    </script>
+</body>
+
+</html>

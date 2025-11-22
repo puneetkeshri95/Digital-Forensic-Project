@@ -1,0 +1,53 @@
+# Digital Forensics Application - Python Dependencies
+
+# Web Framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+
+# Forensic Libraries
+pytsk3==20231007
+pyewf==20230212
+python-magic==0.4.27
+python-magic-bin==0.4.14
+
+# Cryptography and Hashing
+cryptography==41.0.7
+hashlib-compat==1.0.1
+
+# Data Processing
+numpy==1.24.3
+pandas==2.0.3
+
+# Image Processing
+Pillow==10.0.1
+
+# Archive Handling
+py7zr==0.20.6
+rarfile==4.1
+
+# Database
+SQLAlchemy==2.0.23
+sqlite3
+
+# Logging and Configuration
+python-dotenv==1.0.0
+colorama==0.4.6
+
+# Development Tools
+pytest==7.4.3
+black==23.9.1
+flake8==6.1.0
+
+# System Utilities
+psutil==5.9.6
+tqdm==4.66.1
+
+# JSON Processing
+orjson==3.9.9
+
+# Date/Time Utilities
+python-dateutil==2.8.2
+
+# Memory-mapped files
+mmap

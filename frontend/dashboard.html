@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Forensics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/premium.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            position: relative;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+
+        .main-content {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            position: relative;
+            color: #212529;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.3"/></pattern></defs><rect width="80" height="80" fill="url(%23dots)"/></svg>');
+            z-index: 0;
+        }
+
+        .main-content>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content h2,
+        .main-content h3,
+        .main-content h4,
+        .main-content h5,
+        .main-content p,
+        .main-content div {
+            color: #212529 !important;
+        }
+
+        .stats-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: 0;
+        }
+
+        .stats-card .card-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            color: #212529;
+        }
+
+        .feature-card .card-title,
+        .feature-card .card-text {
+            color: #212529 !important;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+        }
+
+        /* Ensure all cards have solid white backgrounds and dark text */
+        .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #212529 !important;
+        }
+
+        .card-body {
+            color: #212529 !important;
+        }
+
+        .card-header {
+            background: rgba(248, 249, 250, 0.95) !important;
+            color: #212529 !important;
+        }
+
+        /* Make sure badge text in feature cards is dark */
+        .feature-card .badge {
+            color: white !important;
+        }
+
+        /* Ensure page title and other headers are dark */
+        #pageTitle {
+            color: #212529 !important;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+    </style>
+</head>
+
+<body style="opacity: 0; transition: opacity 0.3s ease;">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-shield-alt me-2 fs-4"></i>
+                    <span class="fs-5 fw-bold">Digital Forensics</span>
+                </div>
+
+                <!-- User Info -->
+                <div class="user-info">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-user-circle me-2 fs-5"></i>
+                        <div>
+                            <div class="fw-bold" id="userFullName">Loading...</div>
+                            <small id="userEmail">Loading...</small>
+                        </div>
+                    </div>
+                    <span class="badge role-badge" id="userRole">Loading...</span>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="overview">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="#" data-section="integrity" data-min-role="Viewer">
+                        <i class="fas fa-shield-check me-2"></i>
+                        File Integrity
+                    </a>
+                    <a class="nav-link" href="#" data-section="analysis" data-min-role="Forensic Investigator">
+                        <i class="fas fa-search me-2"></i>
+                        ELA Analysis
+                    </a>
+                    <a class="nav-link" href="#" data-section="users" data-min-role="Admin">
+                        <i class="fas fa-users-cog me-2"></i>
+                        User Management
+                    </a>
+                    <a class="nav-link" href="#" data-section="reports" data-min-role="Viewer">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Reports
+                    </a>
+                </nav>
+
+                <!-- Logout -->
+                <div class="mt-auto pt-3">
+                    <button class="btn btn-outline-light btn-sm w-100" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt me-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 id="pageTitle" style="color: #212529;">Dashboard Overview</h2>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2">
+                            <i class="fas fa-circle me-1"></i>
+                            System Online
+                        </span>
+                        <small class="text-muted" id="lastUpdate" style="color: #6c757d;">Last updated: Now</small>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div id="dashboardContent">
+                    <!-- Overview Section -->
+                    <div id="overviewSection">
+                        <!-- Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card bg-primary text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h5 class="card-title">Files Analyzed</h5>
+                                                <h3 class="mb-0" id="filesAnalyzed">0</h3>
+                                            </div>
+                                            <i class="fas fa-file-check fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card bg-success text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h5 class="card-title">Integrity Checks</h5>
+                                                <h3 class="mb-0" id="integrityChecks">0</h3>
+                                            </div>
+                                            <i class="fas fa-shield-check fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card bg-warning text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h5 class="card-title">Active Users</h5>
+                                                <h3 class="mb-0" id="activeUsers">1</h3>
+                                            </div>
+                                            <i class="fas fa-users fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card bg-info text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h5 class="card-title">System Health</h5>
+                                                <h3 class="mb-0">100%</h3>
+                                            </div>
+                                            <i class="fas fa-heartbeat fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card feature-card h-100" onclick="navigateToSection('integrity')">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shield-check fa-3x text-primary mb-3"></i>
+                                        <h5 class="card-title">File Integrity Verification</h5>
+                                        <p class="card-text">Verify file integrity using advanced hash algorithms and
+                                            create integrity chains for forensic evidence.</p>
+                                        <div class="badge bg-primary">Available to all roles</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="card feature-card h-100" onclick="navigateToSection('analysis')">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-search fa-3x text-success mb-3"></i>
+                                        <h5 class="card-title">Error Level Analysis</h5>
+                                        <p class="card-text">Perform ELA analysis on images with automatic integrity
+                                            verification and tampering detection.</p>
+                                        <div class="badge bg-success">Forensic Investigator+</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="card mt-4" style="background: rgba(255, 255, 255, 0.95);">
+                            <div class="card-header" style="background: rgba(248, 249, 250, 0.95); color: #212529;">
+                                <h5 class="mb-0" style="color: #212529;">
+                                    <i class="fas fa-history me-2"></i>
+                                    Recent Activity
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActivity">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="badge bg-success me-3">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold" style="color: #212529;">User Login</div>
+                                            <small class="text-muted" style="color: #6c757d;">You logged in
+                                                successfully</small>
+                                        </div>
+                                        <small class="text-muted ms-auto" style="color: #6c757d;">Just now</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other sections will be loaded dynamically -->
+                    <div id="dynamicContent" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Authentication JS -->
+    <script src="js/auth.js"></script>
+
+    <!-- Dashboard JS -->
+    <script>
+        class Dashboard {
+            constructor() {
+                this.authManager = new AuthManager();
+                this.currentSection = 'overview';
+                this.userRole = null;
+                this.init();
+            }
+
+            async init() {
+                // Show loading state
+                document.body.style.opacity = '0.7';
+
+                // Check authentication
+                if (!this.authManager.isAuthenticated()) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Validate token first
+                const isValid = await this.authManager.validateToken();
+                if (!isValid) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                try {
+                    // Load user profile
+                    await this.loadUserProfile();
+
+                    // Remove loading state
+                    document.body.style.opacity = '1';
+
+                    // Setup navigation
+                    this.setupNavigation();
+
+                    // Setup logout
+                    this.setupLogout();
+
+                    // Load initial statistics
+                    this.loadStatistics();
+
+                    // Update last update time
+                    this.updateLastUpdateTime();
+
+                } catch (error) {
+                    console.error('Dashboard initialization error:', error);
+                    this.authManager.logout();
+                }
+            }
+
+            async loadUserProfile() {
+                try {
+                    const response = await this.authManager.authenticatedFetch('/api/auth/profile');
+                    if (response.ok) {
+                        const data = await response.json();
+                        const profile = data.user; // Access the nested user object
+                        this.userRole = profile.role;
+
+                        // Display the username and email
+                        document.getElementById('userFullName').textContent = profile.full_name || profile.username || 'Unknown User';
+                        document.getElementById('userEmail').textContent = profile.email || '';
+
+                        // Display the role with proper badge styling
+                        const roleElement = document.getElementById('userRole');
+                        roleElement.textContent = this.getRoleDisplayName(profile.role);
+                        roleElement.className = `badge role-badge ${this.getRoleBadgeClass(profile.role)}`;
+
+                        // Filter navigation based on role
+                        this.filterNavigationByRole();
+                    } else {
+                        console.error('Failed to fetch profile:', response.status);
+                        // Set fallback values if API fails
+                        this.setFallbackUserInfo();
+                    }
+                } catch (error) {
+                    console.error('Failed to load user profile:', error);
+                    // Set fallback values if request fails
+                    this.setFallbackUserInfo();
+                }
+            }
+
+            setFallbackUserInfo() {
+                // Get user info from token if API fails
+                const token = this.authManager.getToken();
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        document.getElementById('userFullName').textContent = payload.username || 'User';
+                        document.getElementById('userEmail').textContent = payload.email || '';
+
+                        const roleElement = document.getElementById('userRole');
+                        roleElement.textContent = this.getRoleDisplayName(payload.role);
+                        roleElement.className = `badge role-badge ${this.getRoleBadgeClass(payload.role)}`;
+
+                        this.userRole = payload.role || 'viewer';
+                        this.filterNavigationByRole();
+                    } catch (e) {
+                        console.error('Failed to parse token:', e);
+                        document.getElementById('userFullName').textContent = 'Unknown User';
+                        document.getElementById('userEmail').textContent = '';
+                        document.getElementById('userRole').textContent = 'Viewer';
+                    }
+                }
+            }
+
+            getRoleDisplayName(role) {
+                switch (role) {
+                    case 'admin': return 'Administrator';
+                    case 'forensic_investigator': return 'Forensic Investigator';
+                    case 'viewer': return 'Viewer';
+                    default: return role || 'Unknown';
+                }
+            }
+
+            getRoleBadgeClass(role) {
+                switch (role) {
+                    case 'admin': return 'bg-danger';
+                    case 'forensic_investigator': return 'bg-warning';
+                    case 'viewer': return 'bg-info';
+                    default: return 'bg-secondary';
+                }
+            }
+
+            convertDisplayRoleToBackend(displayRole) {
+                switch (displayRole) {
+                    case 'Admin': return 'admin';
+                    case 'Forensic Investigator': return 'forensic_investigator';
+                    case 'Viewer': return 'viewer';
+                    default: return displayRole ? displayRole.toLowerCase() : 'viewer';
+                }
+            }
+
+            filterNavigationByRole() {
+                const navLinks = document.querySelectorAll('.nav-link[data-min-role]');
+                const roleHierarchy = {
+                    'viewer': 1,
+                    'forensic_investigator': 2,
+                    'admin': 3
+                };
+                const userRoleLevel = roleHierarchy[this.userRole] || 0;
+
+                navLinks.forEach(link => {
+                    const minRoleDisplay = link.getAttribute('data-min-role');
+                    const minRole = this.convertDisplayRoleToBackend(minRoleDisplay);
+                    const minRoleLevel = roleHierarchy[minRole] || 0;
+
+                    if (userRoleLevel < minRoleLevel) {
+                        link.style.display = 'none';
+                    }
+                });
+            }
+
+            setupNavigation() {
+                const navLinks = document.querySelectorAll('.nav-link[data-section]');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = link.getAttribute('data-section');
+                        this.navigateToSection(section);
+                    });
+                });
+            }
+
+            setupLogout() {
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.authManager.logout();
+                });
+            }
+
+            navigateToSection(section) {
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+                // Update page title
+                const titles = {
+                    'overview': 'Dashboard Overview',
+                    'integrity': 'File Integrity Verification',
+                    'analysis': 'Error Level Analysis',
+                    'users': 'User Management',
+                    'reports': 'Reports'
+                };
+                document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+
+                // Show/hide content sections
+                if (section === 'overview') {
+                    document.getElementById('overviewSection').style.display = 'block';
+                    document.getElementById('dynamicContent').style.display = 'none';
+                } else {
+                    document.getElementById('overviewSection').style.display = 'none';
+                    document.getElementById('dynamicContent').style.display = 'block';
+                    this.loadSectionContent(section);
+                }
+
+                this.currentSection = section;
+            }
+
+            loadSectionContent(section) {
+                const content = document.getElementById('dynamicContent');
+
+                switch (section) {
+                    case 'integrity':
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">File Integrity Verification</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- File Upload Section -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card border-primary">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-upload me-1"></i>File Hash Calculator</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Select Files:</label>
+                                                                <input type="file" id="integrity-files" class="form-control" multiple accept="*/*">
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Hash Algorithms:</label>
+                                                                <div class="form-check-group">
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="checkbox" id="sha256" value="sha256" checked>
+                                                                        <label class="form-check-label" for="sha256">SHA256</label>
+                                                                    </div>
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="checkbox" id="md5" value="md5" checked>
+                                                                        <label class="form-check-label" for="md5">MD5</label>
+                                                                    </div>
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="checkbox" id="sha1" value="sha1">
+                                                                        <label class="form-check-label" for="sha1">SHA1</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <button id="calculate-hashes" class="btn btn-primary" disabled>
+                                                                <i class="fas fa-calculator me-1"></i>Calculate Hashes
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="text-center p-4 border border-dashed rounded" style="min-height: 200px;">
+                                                                <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+                                                                <h6 class="text-muted">Select files to see details</h6>
+                                                                <div id="file-info"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Results Section -->
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-list me-1"></i>Hash Results</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="integrity-results">
+                                                        <div class="text-center text-muted py-4">
+                                                            <i class="fas fa-fingerprint fa-2x mb-3"></i>
+                                                            <p>No files processed yet. Upload files and calculate hashes to see results.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- External Tools -->
+                                    <div class="row mt-4">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-external-link-alt fa-2x text-info mb-3"></i>
+                                                    <h6 class="card-title">View History</h6>
+                                                    <p class="card-text small">View previous integrity checks</p>
+                                                    <button class="btn btn-success btn-sm" onclick="window.open('logs-and-notes.html', '_blank')">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        View Logs
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Note:</strong> Tools open in new tabs to preserve your dashboard session. 
+                                        Make sure to allow pop-ups for this site.
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        this.setupEmbeddedTools();
+                        break;
+
+                    case 'analysis':
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Error Level Analysis (ELA)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Image Upload Section -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card border-success">
+                                                <div class="card-header bg-success text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-image me-1"></i>Image Tampering Detection</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Select Image:</label>
+                                                                <input type="file" id="ela-image" class="form-control" accept="image/*">
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Analysis Type:</label>
+                                                                <select id="ela-analysis-type" class="form-select">
+                                                                    <option value="single">Single Analysis</option>
+                                                                    <option value="quick">Quick Scan</option>
+                                                                    <option value="multi-quality">Multi-Quality</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Quality Level:</label>
+                                                                <input type="range" id="ela-quality" class="form-range" min="10" max="95" value="85">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <small>Low (10)</small>
+                                                                    <small id="ela-quality-value">85</small>
+                                                                    <small>High (95)</small>
+                                                                </div>
+                                                            </div>
+                                                            <button id="analyze-ela" class="btn btn-success" disabled>
+                                                                <i class="fas fa-search me-1"></i>Analyze Image
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="image-preview" class="text-center p-4 border border-dashed rounded" style="min-height: 250px;">
+                                                                <i class="fas fa-image fa-2x text-muted mb-3"></i>
+                                                                <h6 class="text-muted">Select an image to preview</h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Results Section -->
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-chart-line me-1"></i>Analysis Results</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="ela-results">
+                                                        <div class="text-center text-muted py-4">
+                                                            <i class="fas fa-chart-bar fa-2x mb-3"></i>
+                                                            <p>No analysis performed yet. Upload an image and click Analyze to see tampering detection results.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- External Tools -->
+                                    <div class="row mt-4">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-external-link-alt fa-2x text-primary mb-3"></i>
+                                                    <h6 class="card-title">Advanced ELA Tools</h6>
+                                                    <p class="card-text small">Full ELA analysis suite</p>
+                                                    <button class="btn btn-primary btn-sm" onclick="window.open('index.html#image-analysis', '_blank')">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        Open Advanced Tools
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-shield-check fa-2x text-success mb-3"></i>
+                                                    <h6 class="card-title">Auto Integrity</h6>
+                                                    <p class="card-text small">Automated integrity verification</p>
+                                                    <button class="btn btn-success btn-sm" onclick="window.open('auto-integrity-dashboard.html', '_blank')">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        Open Tool
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-search fa-2x text-warning mb-3"></i>
+                                                    <h6 class="card-title">Advanced Search</h6>
+                                                    <p class="card-text small">Deep forensic analysis</p>
+                                                    <button class="btn btn-warning btn-sm" onclick="window.open('integrity-verification.html', '_blank')">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        Open Tool
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Forensic Investigator Access:</strong> These tools provide advanced analysis capabilities for forensic investigations.
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        this.setupEmbeddedTools();
+                        break;
+
+                    case 'users':
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">User Management</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Manage system users and permissions:</p>
+                                    <div class="d-grid gap-2 d-md-flex">
+                                        <a href="user-management.html" class="btn btn-primary">
+                                            <i class="fas fa-users-cog me-2"></i>
+                                            Open User Management
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        this.setupEmbeddedTools('analysis');
+                        break;etupEmbeddedTools('integrity');
+                        break;
+
+                    case 'reports':
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Integrity Reports</h5>
+                                    <div>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="window.dashboard.refreshReports()">
+                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" onclick="window.dashboard.exportAllReports()">
+                                            <i class="fas fa-download me-1"></i>Export All
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-list me-1"></i>Report List</h6>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div id="reportsList" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                                                        <div class="text-center p-4 text-muted">
+                                                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                                            <p>Loading reports...</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-eye me-1"></i>Report Details</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="reportDetails">
+                                                        <div class="text-center p-4 text-muted">
+                                                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                                            <h6>No Report Selected</h6>
+                                                            <p>Select a report from the list to view its details.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        // Load reports when the section is opened
+                        this.loadReports();
+                        break;
+
+                    case 'reports':
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Integrity Reports</h5>
+                                    <div>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="window.dashboard.refreshReports()">
+                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" onclick="window.dashboard.exportAllReports()">
+                                            <i class="fas fa-download me-1"></i>Export All
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-list me-1"></i>Report List</h6>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div id="reportsList" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                                                        <div class="text-center p-4 text-muted">
+                                                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                                            <p>Loading reports...</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="fas fa-eye me-1"></i>Report Details</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="reportDetails">
+                                                        <div class="text-center p-4 text-muted">
+                                                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                                            <h6>No Report Selected</h6>
+                                                            <p>Select a report from the list to view its details.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        // Load reports when the section is opened
+                        this.loadReports();
+                        break;
+
+                    default:
+                        content.innerHTML = `
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>Coming Soon</h5>
+                                    <p>This section is under development.</p>
+                                </div>
+                            </div>
+                        `;
+                }
+            }
+
+            async loadStatistics() {
+                try {
+                    // Load statistics from localStorage
+                    const stats = this.getStatisticsFromStorage();
+
+                    document.getElementById('filesAnalyzed').textContent = stats.filesAnalyzed.toLocaleString();
+                    document.getElementById('integrityChecks').textContent = stats.integrityChecks.toLocaleString();
+                    document.getElementById('activeUsers').textContent = '1';
+
+                    // Also try to load from API if available
+                    try {
+                        const response = await this.authManager.authenticatedFetch('/api/auth/dashboard-stats');
+                        if (response.ok) {
+                            const apiStats = await response.json();
+                            if (apiStats.success) {
+                                document.getElementById('filesAnalyzed').textContent = apiStats.stats.files_analyzed.toLocaleString();
+                                document.getElementById('integrityChecks').textContent = apiStats.stats.integrity_checks.toLocaleString();
+                            }
+                        }
+                    } catch (apiError) {
+                        console.log('API stats not available, using local storage');
+                    }
+                } catch (error) {
+                    console.error('Failed to load statistics:', error);
+                    // Fallback values
+                    document.getElementById('filesAnalyzed').textContent = '0';
+                    document.getElementById('integrityChecks').textContent = '0';
+                    document.getElementById('activeUsers').textContent = '1';
+                }
+            }
+
+            getStatisticsFromStorage() {
+                try {
+                    const stats = JSON.parse(localStorage.getItem('dashboard_statistics') || '{}');
+                    return {
+                        filesAnalyzed: stats.filesAnalyzed || 0,
+                        integrityChecks: stats.integrityChecks || 0,
+                        lastUpdated: stats.lastUpdated || null
+                    };
+                } catch (error) {
+                    console.error('Error reading statistics from storage:', error);
+                    return {
+                        filesAnalyzed: 0,
+                        integrityChecks: 0,
+                        lastUpdated: null
+                    };
+                }
+            }
+
+            updateStatistics(filesAnalyzed = 0, integrityChecks = 0) {
+                try {
+                    const currentStats = this.getStatisticsFromStorage();
+                    const newStats = {
+                        filesAnalyzed: currentStats.filesAnalyzed + filesAnalyzed,
+                        integrityChecks: currentStats.integrityChecks + integrityChecks,
+                        lastUpdated: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('dashboard_statistics', JSON.stringify(newStats));
+
+                    // Update the display immediately
+                    document.getElementById('filesAnalyzed').textContent = newStats.filesAnalyzed.toLocaleString();
+                    document.getElementById('integrityChecks').textContent = newStats.integrityChecks.toLocaleString();
+
+                    console.log('Statistics updated:', newStats);
+                } catch (error) {
+                    console.error('Error updating statistics:', error);
+                }
+            }
+
+            updateLastUpdateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                document.getElementById('lastUpdate').textContent = `Last updated: ${timeString}`;
+
+                // Update every second for real-time clock
+                setTimeout(() => this.updateLastUpdateTime(), 1000);
+            }
+
+            async loadReports() {
+                const reportsList = document.getElementById('reportsList');
+                try {
+                    // Load reports from localStorage and API
+                    const reports = await this.fetchIntegrityReports();
+
+                    // Cache reports for detail view
+                    localStorage.setItem('cached_reports', JSON.stringify(reports));
+
+                    if (reports.length === 0) {
+                        reportsList.innerHTML = `
+                            <div class="text-center p-4 text-muted">
+                                <i class="fas fa-folder-open fa-2x mb-3"></i>
+                                <h6>No Reports Found</h6>
+                                <p>No integrity reports have been generated yet.<br>
+                                Use the integrity tools to generate reports.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    reportsList.innerHTML = reports.map((report, index) => `
+                        <div class="list-group-item list-group-item-action report-item" data-report-index="${index}" onclick="window.dashboard.showReportDetails(${index})">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-file me-1"></i>
+                                        ${report.filename || 'Unknown File'}
+                                    </h6>
+                                    <p class="mb-1 small text-muted">
+                                        ${Object.keys(report.hashes || {}).map(alg => `<span class="badge bg-light text-dark me-1">${alg.toUpperCase()}</span>`).join('')}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        ${new Date(report.timestamp).toLocaleString()}
+                                    </small>
+                                </div>
+                                <span class="badge bg-primary">${report.context || 'manual_check'}</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Auto-select first report if available
+                    if (reports.length > 0) {
+                        this.showReportDetails(0);
+                    }
+
+                } catch (error) {
+                    console.error('Failed to load reports:', error);
+                    reportsList.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load reports: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async fetchIntegrityReports() {
+                const reports = [];
+
+                // Get reports from localStorage (from integrity tools)
+                const localReports = JSON.parse(localStorage.getItem('integrity_reports') || '[]');
+                reports.push(...localReports);
+
+                // Try to fetch from API if available
+                try {
+                    const response = await this.authManager.authenticatedFetch('/api/integrity/reports');
+                    if (response.ok) {
+                        const apiReports = await response.json();
+                        if (apiReports.success && apiReports.reports) {
+                            reports.push(...apiReports.reports);
+                        }
+                    }
+                } catch (error) {
+                    console.log('API reports not available, using local storage only');
+                }
+
+                // Remove duplicates and sort by timestamp
+                const uniqueReports = reports.filter((report, index, self) =>
+                    index === self.findIndex(r => r.filename === report.filename && r.timestamp === report.timestamp)
+                );
+
+                return uniqueReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+
+            showReportDetails(index) {
+                const reports = JSON.parse(localStorage.getItem('cached_reports') || '[]');
+                const report = reports[index];
+
+                if (!report) return;
+
+                // Update active selection
+                document.querySelectorAll('.report-item').forEach(item => item.classList.remove('active'));
+                document.querySelector(`[data-report-index="${index}"]`).classList.add('active');
+
+                const detailsContainer = document.getElementById('reportDetails');
+                const hashEntries = Object.entries(report.hashes || {});
+
+                detailsContainer.innerHTML = `
+                    <div class="report-detail-view">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 class="mb-1">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    ${report.filename || 'Unknown File'}
+                                </h5>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Context: <span class="badge bg-info">${(report.context || 'manual_check').replace('_', ' ').toUpperCase()}</span>
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(report.timestamp).toLocaleDateString()}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    ${new Date(report.timestamp).toLocaleTimeString()}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-info me-1"></i>File Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-sm-4"><strong>Filename:</strong></div>
+                                            <div class="col-sm-8">${report.filename || 'N/A'}</div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Size:</strong></div>
+                                            <div class="col-sm-8">${report.size ? (report.size / 1024).toFixed(2) + ' KB' : 'N/A'}</div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Type:</strong></div>
+                                            <div class="col-sm-8">${report.type || 'N/A'}</div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Algorithms:</strong></div>
+                                            <div class="col-sm-8">${hashEntries.length} hash function(s)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-clock me-1"></i>Timing Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-sm-4"><strong>Generated:</strong></div>
+                                            <div class="col-sm-8">${new Date(report.timestamp).toLocaleString()}</div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Processing:</strong></div>
+                                            <div class="col-sm-8">${report.processing_time || 'N/A'}ms</div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Status:</strong></div>
+                                            <div class="col-sm-8"><span class="badge bg-success">Completed</span></div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-sm-4"><strong>Last Updated:</strong></div>
+                                            <div class="col-sm-8" id="currentTime">${new Date().toLocaleTimeString('en-US', { hour12: false })}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-fingerprint me-1"></i>Hash Values</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Algorithm</th>
+                                                <th>Hash Value</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${hashEntries.map(([algorithm, hash]) => `
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-primary">${algorithm.toUpperCase()}</span>
+                                                    </td>
+                                                    <td>
+                                                        <code class="small user-select-all">${hash}</code>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText('${hash}')" title="Copy to clipboard">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Update the current time every second
+                this.updateReportCurrentTime();
+            }
+
+            updateReportCurrentTime() {
+                const currentTimeElement = document.getElementById('currentTime');
+                if (currentTimeElement) {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('en-US', {
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    currentTimeElement.textContent = timeString;
+                    setTimeout(() => this.updateReportCurrentTime(), 1000);
+                }
+            }
+
+            refreshReports() {
+                this.loadReports();
+            }
+
+            exportAllReports() {
+                const reports = JSON.parse(localStorage.getItem('cached_reports') || '[]');
+                if (reports.length === 0) {
+                    alert('No reports to export.');
+                    return;
+                }
+
+                const exportData = {
+                    export_info: {
+                        generated_at: new Date().toISOString(),
+                        total_reports: reports.length,
+                        exported_by: 'Digital Forensics Dashboard'
+                    },
+                    reports: reports
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `integrity_reports_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            setupEmbeddedTools() {
+                // Setup integrity tools when integrity section is loaded
+                const integrityFiles = document.getElementById('integrity-files');
+                const calculateBtn = document.getElementById('calculate-hashes');
+                const fileInfo = document.getElementById('file-info');
+                const resultsContainer = document.getElementById('integrity-results');
+
+                if (integrityFiles && calculateBtn) {
+                    integrityFiles.addEventListener('change', (e) => {
+                        const files = e.target.files;
+                        if (files.length > 0) {
+                            calculateBtn.disabled = false;
+                            this.displayFileInfo(files, fileInfo);
+                        } else {
+                            calculateBtn.disabled = true;
+                            fileInfo.innerHTML = '';
+                        }
+                    });
+
+                    calculateBtn.addEventListener('click', () => {
+                        this.calculateFileHashes(integrityFiles.files, resultsContainer);
+                    });
+                }
+
+                // Setup ELA tools when analysis section is loaded
+                const elaImage = document.getElementById('ela-image');
+                const analyzeBtn = document.getElementById('analyze-ela');
+                const imagePreview = document.getElementById('image-preview');
+                const elaResults = document.getElementById('ela-results');
+                const qualitySlider = document.getElementById('ela-quality');
+                const qualityValue = document.getElementById('ela-quality-value');
+
+                if (elaImage && analyzeBtn) {
+                    elaImage.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            analyzeBtn.disabled = false;
+                            this.displayImagePreview(file, imagePreview);
+                        } else {
+                            analyzeBtn.disabled = true;
+                            imagePreview.innerHTML = `
+                                <i class="fas fa-image fa-2x text-muted mb-3"></i>
+                                <h6 class="text-muted">Select an image to preview</h6>
+                            `;
+                        }
+                    });
+
+                    analyzeBtn.addEventListener('click', () => {
+                        this.performELAAnalysis(elaImage.files[0], elaResults);
+                    });
+                }
+
+                if (qualitySlider && qualityValue) {
+                    qualitySlider.addEventListener('input', (e) => {
+                        qualityValue.textContent = e.target.value;
+                    });
+                }
+            }
+
+            displayFileInfo(files, container) {
+                const fileList = Array.from(files).map(file => `
+                    <div class="small mb-1">
+                        <i class="fas fa-file me-1"></i>
+                        <strong>${file.name}</strong>
+                        <br>
+                        <span class="text-muted">Size: ${(file.size / 1024).toFixed(2)} KB</span>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="text-start">
+                        <h6 class="mb-2">${files.length} file(s) selected:</h6>
+                        ${fileList}
+                    </div>
+                `;
+            }
+
+            displayImagePreview(file, container) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    container.innerHTML = `
+                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" alt="Preview">
+                        <div class="mt-2">
+                            <small class="text-muted">${file.name} (${(file.size / 1024).toFixed(2)} KB)</small>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            async calculateFileHashes(files, resultsContainer) {
+                if (!files || files.length === 0) return;
+
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+                        <p>Calculating hashes for ${files.length} file(s)...</p>
+                    </div>
+                `;
+
+                try {
+                    // Check authentication
+                    if (!this.authManager || !this.authManager.isAuthenticated()) {
+                        throw new Error('User not authenticated. Please login first.');
+                    }
+
+                    const algorithms = [];
+                    if (document.getElementById('sha256')?.checked) algorithms.push('sha256');
+                    if (document.getElementById('md5')?.checked) algorithms.push('md5');
+                    if (document.getElementById('sha1')?.checked) algorithms.push('sha1');
+                    
+                    // Default to sha256 if no algorithms selected
+                    if (algorithms.length === 0) algorithms.push('sha256');
+                    
+                    console.log('Calculating hashes with algorithms:', algorithms);
+
+                    const formData = new FormData();
+                    for (let file of files) {
+                        formData.append('files', file);
+                    }
+                    formData.append('algorithms', algorithms.join(','));
+                    formData.append('context', 'dashboard_calculation');
+
+                    const response = await this.authManager.authenticatedFetch('/api/integrity/batch-calculate', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Hash calculation result:', result);
+                        this.displayHashResults(result, resultsContainer);
+
+                        // Update dashboard statistics
+                        this.updateStatistics(files.length, 1);
+                    } else {
+                        const errorText = await response.text();
+                        console.error('API Error:', response.status, errorText);
+                        throw new Error(`Hash calculation failed (${response.status}): ${errorText}`);
+                    }
+                } catch (error) {
+                    console.error('Hash calculation error:', error);
+                    
+                    // Try direct fetch as fallback
+                    if (error.message.includes('not authenticated')) {
+                        try {
+                            console.log('Trying direct API call...');
+                            const directResponse = await fetch('/api/integrity/batch-calculate', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            if (directResponse.ok) {
+                                const result = await directResponse.json();
+                                console.log('Direct API result:', result);
+                                this.displayHashResults(result, resultsContainer);
+                                this.updateStatistics(files.length, 1);
+                                return;
+                            }
+                        } catch (directError) {
+                            console.error('Direct API also failed:', directError);
+                        }
+                    }
+                    
+                    resultsContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error calculating hashes: ${error.message}
+                            <div class="mt-2"><small>Check console for details. Try refreshing and logging in again.</small></div>
+                        </div>
+                    `;
+                }
+            }
+
+            displayHashResults(result, container) {
+                if (!result.success || !result.results) {
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to calculate hashes
+                        </div>
+                    `;
+                    return;
+                }
+
+                const resultsHtml = Object.entries(result.results).map(([filename, fileResult]) => `
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-file me-1"></i>
+                                ${filename}
+                                <span class="badge bg-secondary ms-2">${(fileResult.file_size / 1024).toFixed(2)} KB</span>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Algorithm</th>
+                                            <th>Hash Value</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${Object.entries(fileResult.hashes).map(([alg, hash]) => `
+                                            <tr>
+                                                <td><span class="badge bg-primary">${alg.toUpperCase()}</span></td>
+                                                <td><code class="small">${hash}</code></td>
+                                                <td>
+                                                    <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText('${hash}')" title="Copy">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = resultsHtml;
+            }
+
+            async performELAAnalysis(file, resultsContainer) {
+                if (!file) return;
+
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-success mb-3"></i>
+                        <p>Analyzing image for tampering...</p>
+                    </div>
+                `;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('analysis_type', document.getElementById('ela-analysis-type')?.value || 'single');
+                    formData.append('quality', document.getElementById('ela-quality')?.value || '85');
+
+                    const response = await fetch('/api/ela/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        this.displayELAResults(result, resultsContainer);
+
+                        // Update dashboard statistics
+                        this.updateStatistics(1, 1);
+                    } else {
+                        throw new Error('ELA analysis failed');
+                    }
+                } catch (error) {
+                    resultsContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>ELA Analysis Demo Mode</strong><br>
+                            Full ELA analysis requires backend API. Showing demo results for: <strong>${file.name}</strong>
+                            <div class="mt-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card border-success">
+                                            <div class="card-body">
+                                                <h6 class="text-success">Tampering Assessment</h6>
+                                                <p class="mb-1"><strong>Risk Level:</strong> <span class="badge bg-success">LOW</span></p>
+                                                <p class="mb-1"><strong>Probability:</strong> 15.3%</p>
+                                                <p class="mb-0"><strong>Confidence:</strong> High</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-info">
+                                            <div class="card-body">
+                                                <h6 class="text-info">Analysis Details</h6>
+                                                <p class="mb-1"><strong>Quality:</strong> ${document.getElementById('ela-quality')?.value || '85'}%</p>
+                                                <p class="mb-1"><strong>Type:</strong> ${document.getElementById('ela-analysis-type')?.value || 'single'}</p>
+                                                <p class="mb-0"><strong>Status:</strong> Complete</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Update statistics even in demo mode
+                    this.updateStatistics(1, 1);
+                }
+            }
+
+            displayELAResults(result, container) {
+                // This would display real ELA results when the API is available
+                const tamperingLevel = result.tampering_assessment?.risk_level || 'low';
+                const probability = result.tampering_assessment?.probability || 0.15;
+
+                let riskClass = 'success';
+                if (tamperingLevel === 'medium') riskClass = 'warning';
+                if (tamperingLevel === 'high') riskClass = 'danger';
+
+                container.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-${riskClass}">
+                                <div class="card-header bg-${riskClass} text-white">
+                                    <h6 class="mb-0">Tampering Assessment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Risk Level:</strong> <span class="badge bg-${riskClass}">${tamperingLevel.toUpperCase()}</span></p>
+                                    <p class="mb-1"><strong>Probability:</strong> ${(probability * 100).toFixed(1)}%</p>
+                                    <p class="mb-0"><strong>Confidence:</strong> ${result.tampering_assessment?.confidence || 'High'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h6 class="text-info">Analysis Summary</h6>
+                                    <p class="mb-1"><strong>Suspicious Regions:</strong> ${result.suspicious_regions?.length || 0}</p>
+                                    <p class="mb-1"><strong>Quality Factor:</strong> ${result.quality_assessment?.overall_quality || 'Good'}</p>
+                                    <p class="mb-0"><strong>Processing Time:</strong> ${result.processing_time || 'N/A'}ms</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Global function for onclick handlers
+        function navigateToSection(section) {
+            if (window.dashboard) {
+                window.dashboard.navigateToSection(section);
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new Dashboard();
+
+            // Create floating particles
+            createParticles();
+
+            // Apply premium styling
+            applyPremiumStyling();
+        });
+
+        // Create floating particles
+        function createParticles() {
+            // Add particles container if not exists
+            if (!document.getElementById('particles-container')) {
+                const container = document.createElement('div');
+                container.id = 'particles-container';
+                document.body.appendChild(container);
+            }
+
+            const container = document.getElementById('particles-container');
+            const particleCount = 15;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (8 + Math.random() * 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Apply premium styling
+        function applyPremiumStyling() {
+            // Apply to feature cards
+            document.querySelectorAll('.feature-card').forEach((card, index) => {
+                card.classList.add('premium-card', 'fade-in-up', `animate-delay-${(index % 5) + 1}`);
+            });
+
+            // Apply to stats cards
+            document.querySelectorAll('.stats-card').forEach((card, index) => {
+                card.classList.add('premium-card', 'fade-in-up', `animate-delay-${(index % 3) + 1}`);
+            });
+
+            // Apply to buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                if (!btn.classList.contains('btn-outline-danger')) {
+                    btn.classList.add('btn-premium');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
