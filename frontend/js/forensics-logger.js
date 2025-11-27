@@ -700,9 +700,10 @@ class ForensicsLogger {
     startAutoRefresh() {
         if (this.refreshInterval) return;
 
-        this.refreshInterval = setInterval(() => {
-            this.refreshData();
-        }, 30000); // Refresh every 30 seconds
+        // Auto-refresh disabled to prevent page reload issues
+        // this.refreshInterval = setInterval(() => {
+        //     this.refreshData();
+        // }, 30000); // Refresh every 30 seconds
     }
 
     stopAutoRefresh() {

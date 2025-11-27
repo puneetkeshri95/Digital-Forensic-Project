@@ -15,11 +15,11 @@ class UserManagement {
     async initialize() {
         // Check authentication and permissions
         if (!requireAuth()) return;
-        
+
         const permissions = await authManager.getUserPermissions();
         if (!permissions.includes('manage_users')) {
             this.showAlert('You do not have permission to access user management', 'danger');
-            setTimeout(() => window.location.href = '/', 3000);
+            setTimeout(() => window.location.href = 'dashboard.html', 3000);
             return;
         }
 
@@ -76,7 +76,7 @@ class UserManagement {
 
     renderStatistics(stats) {
         const container = document.getElementById('statsContainer');
-        
+
         const statsHtml = `
             <div class="col-md-3">
                 <div class="stats-card">
@@ -111,21 +111,21 @@ class UserManagement {
                 </div>
             </div>
         `;
-        
+
         container.innerHTML = statsHtml;
     }
 
     renderUsersTable() {
         const tbody = document.getElementById('usersTableBody');
-        
+
         const usersHtml = this.users.map(user => {
             const avatar = this.generateAvatar(user.full_name || user.username);
             const roleClass = `role-${user.role}`;
             const statusClass = `status-${user.status}`;
-            const lastLogin = user.last_login ? 
+            const lastLogin = user.last_login ?
                 new Date(user.last_login).toLocaleDateString() : 'Never';
             const created = new Date(user.created_at).toLocaleDateString();
-            
+
             return `
                 <tr>
                     <td>
@@ -167,7 +167,7 @@ class UserManagement {
                 </tr>
             `;
         }).join('');
-        
+
         tbody.innerHTML = usersHtml;
     }
 
@@ -219,7 +219,7 @@ class UserManagement {
         document.getElementById('passwordSection').style.display = 'block';
         document.getElementById('password').required = true;
         document.getElementById('confirmPassword').required = true;
-        
+
         const modal = new bootstrap.Modal(document.getElementById('userModal'));
         modal.show();
     }
@@ -230,7 +230,7 @@ class UserManagement {
 
         this.editingUserId = userId;
         document.getElementById('userModalTitle').innerHTML = '<i class="fas fa-user-edit me-2"></i>Edit User';
-        
+
         // Populate form
         document.getElementById('userId').value = user.user_id;
         document.getElementById('username').value = user.username;
@@ -239,12 +239,12 @@ class UserManagement {
         document.getElementById('department').value = user.department || '';
         document.getElementById('role').value = user.role;
         document.getElementById('status').value = user.status;
-        
+
         // Hide password section for editing
         document.getElementById('passwordSection').style.display = 'none';
         document.getElementById('password').required = false;
         document.getElementById('confirmPassword').required = false;
-        
+
         const modal = new bootstrap.Modal(document.getElementById('userModal'));
         modal.show();
     }
@@ -256,8 +256,8 @@ class UserManagement {
         const detailsContent = document.getElementById('userDetailsContent');
         const avatar = this.generateAvatar(user.full_name || user.username);
         const roleClass = `role-${user.role}`;
-        
-        const permissionsHtml = user.permissions ? 
+
+        const permissionsHtml = user.permissions ?
             user.permissions.map(p => `<span class="permission-badge">${p.replace('_', ' ')}</span>`).join(' ') :
             'No permissions assigned';
 
@@ -340,7 +340,7 @@ class UserManagement {
     async saveUser() {
         const form = document.getElementById('userForm');
         const formData = new FormData(form);
-        
+
         const userData = {
             username: formData.get('username'),
             email: formData.get('email'),
@@ -360,17 +360,17 @@ class UserManagement {
         if (!this.editingUserId) {
             const password = formData.get('password');
             const confirmPassword = formData.get('confirm_password');
-            
+
             if (!password || password.length < 8) {
                 this.showAlert('Password must be at least 8 characters long', 'warning');
                 return;
             }
-            
+
             if (password !== confirmPassword) {
                 this.showAlert('Passwords do not match', 'warning');
                 return;
             }
-            
+
             userData.password = password;
         }
 
@@ -394,10 +394,10 @@ class UserManagement {
                 const result = await response.json();
                 if (result.success) {
                     this.showAlert(
-                        this.editingUserId ? 'User updated successfully' : 'User created successfully', 
+                        this.editingUserId ? 'User updated successfully' : 'User created successfully',
                         'success'
                     );
-                    
+
                     // Close modal and reload users
                     bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
                     await this.loadUsers();
@@ -426,7 +426,7 @@ class UserManagement {
 
         const newStatus = user.status === 'active' ? 'suspended' : 'active';
         const action = newStatus === 'active' ? 'activate' : 'suspend';
-        
+
         if (!confirm(`Are you sure you want to ${action} this user?`)) {
             return;
         }
@@ -469,7 +469,7 @@ class UserManagement {
     async updateProfile() {
         const form = document.getElementById('profileForm');
         const formData = new FormData(form);
-        
+
         const profileData = {
             email: formData.get('email'),
             full_name: formData.get('full_name'),
@@ -510,7 +510,7 @@ class UserManagement {
     async changePassword() {
         const form = document.getElementById('changePasswordForm');
         const formData = new FormData(form);
-        
+
         const currentPassword = formData.get('current_password');
         const newPassword = formData.get('new_password');
         const confirmPassword = formData.get('confirm_new_password');

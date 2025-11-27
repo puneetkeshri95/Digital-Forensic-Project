@@ -12,10 +12,8 @@ class AuthManager {
     }
 
     initialize() {
-        // Check if already authenticated
-        if (this.token) {
-            this.validateToken();
-        }
+        // Don't auto-validate in constructor to prevent duplicate redirects
+        // Token validation will be handled by dashboard.init() or login page
 
         // Setup login form if on login page
         if (document.getElementById('loginForm')) {
@@ -62,12 +60,13 @@ class AuthManager {
     }
 
     setupTokenValidation() {
+        // Token validation disabled to prevent refresh loops
         // Validate token every 5 minutes
-        setInterval(() => {
-            if (this.token) {
-                this.validateToken();
-            }
-        }, 5 * 60 * 1000);
+        // setInterval(() => {
+        //     if (this.token) {
+        //         this.validateToken();
+        //     }
+        // }, 5 * 60 * 1000);
     }
 
     async handleLogin(event) {
@@ -120,8 +119,8 @@ class AuthManager {
 
                 // Redirect to dashboard
                 setTimeout(() => {
-                    window.location.href = '/';
-                }, 1500);
+                    window.location.href = 'login.html';
+                }, 2000);
 
             } else {
                 // Handle login failure
@@ -157,7 +156,7 @@ class AuthManager {
             this.clearStoredData();
 
             // Redirect to login page
-            window.location.href = '/';
+            window.location.href = 'login.html';
         }
     }
 
@@ -406,7 +405,7 @@ class AuthManager {
             if (response.status === 401) {
                 // Unauthorized - token might be expired
                 this.clearStoredData();
-                window.location.href = '/';
+                window.location.href = 'login.html';
                 return null;
             }
 
@@ -486,7 +485,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (authManager.token) {
             const isValid = await authManager.validateToken();
             if (isValid) {
-                window.location.href = '/';
+                window.location.href = 'dashboard.html';
             }
         }
     }
